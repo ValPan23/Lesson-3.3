@@ -62,7 +62,7 @@ while running:
                 # Увеличение счета при попадании:
                 score += 1  # Прибавляем один к счету при попадании
 
-    # Движение мишени
+    # Движение мишени на экране
     target_x += target_velocity_x
     target_y += target_velocity_y
 
