@@ -4,80 +4,80 @@
 увеличивает скорость движения на 5%.'''
 
 # Импорт библиотек:
-import pygame  # Импортируем библиотеку Pygame для создания игр
-import random  # Импортируем модуль random для генерации случайных чисел
+import pygame
+import random
 
-# Инициализация Pygame
 pygame.init()
 
-# Установка размеров окна игры
-SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600  # Определяем константы для ширины и высоты экрана
-# Создание окна игры с заданными размерами
+SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-# Установка названия и иконки окна
-pygame.display.set_caption("Игра Тир")  # Устанавливаем заголовок окна
-icon = pygame.image.load("img/icon.jpg")  # Загружаем иконку для окна
-pygame.display.set_icon(icon)  # Устанавливаем иконку для окна
+pygame.display.set_caption("Игра Тир")
+icon = pygame.image.load("img/icon.jpg")
+pygame.display.set_icon(icon)
 
-# Загрузка изображения мишени
-target_image = pygame.image.load("img/target.png")  # Загрузка изображения мишени
-target_width, target_height = 80, 80  # Установка размеров мишени
+target_image = pygame.image.load("img/target.png")
+target_width, target_height = 80, 80
 
-# Начальная позиция мишени
-target_x = random.randint(0, SCREEN_WIDTH - target_width)  # Случайная начальная позиция X мишени
-target_y = random.randint(0, SCREEN_HEIGHT - target_height)  # Случайная начальная позиция Y мишени
+target_x = random.randint(0, SCREEN_WIDTH - target_width)
+target_y = random.randint(0, SCREEN_HEIGHT - target_height)
 
-# Начальная скорость мишени
-target_velocity_x = 0.1 # Устанавливаем начальную скорость мишени по оси x
-target_velocity_y = 0.1 # Устанавливаем начальную скорость мишени по оси y
+target_velocity_x = 0.1
+target_velocity_y = 0.1
 
-# Начальный счет
-score = 0  # Счет начинается с нуля
+score = 0
 
-# Установка цвета фона (случайный цвет фона)
 color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
-# Инициализация шрифта для отображения счета
 font = pygame.font.Font(None, 36)
 
-# Основной цикл игры
+# Добавляем переменные для взрыва
+explosion_active = False  # Активность взрыва
+explosion_duration = 0  # Продолжительность взрыва
+explosion_radius = 0  # Радиус взрыва
+explosion_pos = (0, 0)  # Позиция взрыва
+
 running = True
 while running:
-    screen.fill(color)  # Заполняем экран цветом фона
-    # Обработка событий:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:  # Проверка на закрытие окна
-            running = False
-        if event.type == pygame.MOUSEBUTTONDOWN:  # СОбработка нажатия кнопки мыши
-            mouse_x, mouse_y = pygame.mouse.get_pos()  # Получаем координаты курсора мыши
-            # Проверяем попадание по мишени
-            if target_x < mouse_x < target_x + target_width and target_y < mouse_y < target_y + target_height:
-                # Перемещение мишени в случайную позицию:
-                target_x = random.randint(0, SCREEN_WIDTH - target_width)  # Новая случайная позиция X
-                target_y = random.randint(0, SCREEN_HEIGHT - target_height)  # Новая случайная позиция Y
-                # Увеличение скорости мишени на 5% при попадании:
-                target_velocity_x *= 1.05  # Увеличиваем скорость по оси X
-                target_velocity_y *= 1.05  # Увеличиваем скорость по оси Y
-                # Увеличение счета при попадании:
-                score += 1  # Прибавляем один к счету при попадании
+    screen.fill(color)
 
-    # Движение мишени на экране
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            if target_x < mouse_x < target_x + target_width and target_y < mouse_y < target_y + target_height:
+                target_x = random.randint(0, SCREEN_WIDTH - target_width)
+                target_y = random.randint(0, SCREEN_HEIGHT - target_height)
+                target_velocity_x *= 1.05
+                target_velocity_y *= 1.05
+                score += 1
+                # Активируем взрыв
+                explosion_active = True
+                explosion_duration = 50  # Время отображения взрыва
+                explosion_radius = 20  # Начальный радиус взрыва
+                explosion_pos = (mouse_x, mouse_y)
+
     target_x += target_velocity_x
     target_y += target_velocity_y
 
-    # Проверка выхода мишени за пределы экрана и изменение направления движения
     if target_x + target_width > SCREEN_WIDTH or target_x < 0:
         target_velocity_x *= -1
     if target_y + target_height > SCREEN_HEIGHT or target_y < 0:
         target_velocity_y *= -1
 
-    screen.blit(target_image, (target_x, target_y))  # Отображение мишени на экране
+    screen.blit(target_image, (target_x, target_y))
 
-    # Отображение счета
-    score_text = font.render(f"Очки: {score}", True, (255, 255, 255))  # Формирование текста для отображения счета
-    screen.blit(score_text, (10, 10))  # Вывод счета на экран
+    if explosion_active:
+        pygame.draw.circle(screen, (255, 69, 0), explosion_pos, explosion_radius)  # Рисуем "взрыв"
+        explosion_radius += 6  # Увеличиваем радиус взрыва
+        explosion_duration -= 1  # Уменьшаем время отображения взрыва
+        if explosion_duration <= 0:
+            explosion_active = False  # Заканчиваем отображение взрыва
 
-    pygame.display.update()  # Обновление содержимого всего экрана
+    score_text = font.render(f"Очки: {score}", True, (255, 255, 255))
+    screen.blit(score_text, (10, 10))
 
-pygame.quit()  # Выход из Pygame, закрытие всех окон и освобождение ресурсов
+    pygame.display.update()
+
+pygame.quit()
